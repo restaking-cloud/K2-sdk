@@ -1,0 +1,1 @@
+declare module '@blockswaplab/@blockswaplab/rpbs-self-attestation'

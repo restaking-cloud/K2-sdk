@@ -1,0 +1,34 @@
+{
+  "name": "@blockswaplab/k2-sdk",
+  "version": "1.0.3",
+  "description": "SDK for K-sqaured lending protocol",
+  "main": "./dist/config.js",
+  "type": "commonjs",
+  "exports": {
+    ".": "./dist/config.js"
+  },
+  "scripts": {
+    "postinstall": "typechain --target ethers-v5 --out-dir src/contracts './src/abis/*.json' && tsc",
+    "test": "mocha ./test/**/*.test.js --timeout 20000 --recursive"
+  },
+  "dependencies": {
+    "@blockswaplab/rpbs-self-attestation": "1.0.0",
+    "@ethersproject/abstract-provider": "^5.7.0",
+    "@ethersproject/contracts": "^5.7.0",
+    "@typechain/ethers-v5": "^10.2.0",
+    "@types/lodash": "^4.14.191",
+    "@types/node": "^18.15.3",
+    "axios": "^1.5.1",
+    "chai": "^4.3.4",
+    "ethers": "^5.5.3",
+    "graphql": "^16.1.0",
+    "graphql-request": "^3.7.0",
+    "lodash": "^4.17.21",
+    "mocha": "^10.0.0",
+    "typechain": "^8.1.1",
+    "typescript": "^4.9.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  }
+}

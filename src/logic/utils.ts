@@ -1,8 +1,8 @@
-import { customErrors } from './constants';
+import { _extractChainID, _getChainSpecificConstants, customErrors } from './constants';
 import _ from 'lodash';
 import axios from 'axios';
-import { LivenessReportT, LivenessT, MiddlewareInfoT, ReportT } from '../types';
-import { _getDebtor } from './kSquaredLending';
+import { CorruptionEventDataT, CorruptionEventT, CorruptionReportT, EffectiveBalanceReportT, LivenessDataT, LivenessReportT, MiddlewareInfoT } from '../types';
+import { _getDebtor } from './k2Lending';
 import { Signer, ethers } from 'ethers';
 import { Provider } from '@ethersproject/abstract-provider';
 
@@ -41,14 +41,15 @@ export const _getMiddlewareInfo = async (middlewareAPI: string): Promise<Middlew
 	return data;
 };
 
-const _getLivenessCount = async (livenessAPI: string): Promise<LivenessT> => {
+const _getLivenessData = async (livenessAPI: string, livenessQueryParams: string): Promise<LivenessDataT> => {
 
-	const { data } = await axios.get<LivenessT>(`${livenessAPI}`);
-	
+	const query = livenessQueryParams === '' ? '' : livenessQueryParams
+	const { data } = await axios.get<LivenessDataT>(`${livenessAPI}${query}`);
+
 	return data;
 };
 
-export const _generateLivenessReport = async (signer: Signer | Provider, middlewareAPI: string) => {
+export const _generateLivenessReport = async (signer: Signer | Provider, middlewareAPI: string, debtorOverride: string | null = null, livenessQueryParams: string = '', message: string = '') => {
 
 	const selfAttester = R.rpbs.SelfAttester.createSelfAttester();
 
@@ -58,12 +59,11 @@ export const _generateLivenessReport = async (signer: Signer | Provider, middlew
 
 	const livenessEndpoint = middlewareInfo.LIVENESS_ENDPOINT;
 	const version = middlewareInfo.VERSION;
-	const debtor = middlewareInfo.SERVICE_PROVIDER_BORROW_ADDRESS;
+	const debtor = debtorOverride ? debtorOverride : middlewareInfo.DEFAULT_SERVICE_PROVIDER_BORROW_ADDRESS;
 
-	const commonInfo: LivenessT = await _getLivenessCount(livenessEndpoint);
+	const livenessDataResponse: LivenessDataT = await _getLivenessData(livenessEndpoint, livenessQueryParams);
 
-	const message = '';
-
+	const commonInfo = { livenessData: livenessDataResponse.livenessData };
 	const signature = selfAttester.generateSignature(JSON.stringify(commonInfo), message);
 
 	const marshalledSignature = {
@@ -75,9 +75,7 @@ export const _generateLivenessReport = async (signer: Signer | Provider, middlew
 	const debtPosition = await _getDebtor(signer, _add0x(debtor));
 
 	const maxSlashableBN = ethers.BigNumber.from(debtPosition.maxSlashableAmountPerLiveness.toString());
-	const offlineValidatorsBN = ethers.BigNumber.from(commonInfo.numOfValidatorsOffline);
-	const totalValidatorsBN = ethers.BigNumber.from(commonInfo.totalValidators);
-	const proposedSlashingBN = maxSlashableBN.mul(offlineValidatorsBN).div(totalValidatorsBN);
+	const proposedSlashingBN = maxSlashableBN.mul(ethers.utils.parseEther(livenessDataResponse.severityScore)).div(ethers.utils.parseEther('1'));
 
 	const livenessReport: LivenessReportT = {
 		rpbsSelfAttestation: {
@@ -89,14 +87,16 @@ export const _generateLivenessReport = async (signer: Signer | Provider, middlew
 		version: version,
 		eventData: {
 			...commonInfo,
-			proposedSlashing: proposedSlashingBN.toString()
-		}
+			proposedSlashing: proposedSlashingBN.toString(),
+			query: livenessQueryParams
+		},
+		serviceProviderAddress: debtor
 	};
-	
+
 	return livenessReport;
 };
 
-export const _verifyLivenessReport = async (middlewareAPI: string, report: LivenessReportT) => {
+export const _verifyReport = async (middlewareAPI: string, report: LivenessReportT | CorruptionReportT) => {
 
 	try {
         const response = await axios.post(`${middlewareAPI}/report`, report);
@@ -104,4 +104,62 @@ export const _verifyLivenessReport = async (middlewareAPI: string, report: Liven
     } catch(error: any) {
 		throw new error.response.data;
     }
+};
+
+export const _getEffectiveBalance = async (beaconNodeUrl: string, blsPublicKey: string) => {
+
+	blsPublicKey = _add0x(blsPublicKey);
+
+	const report = await axios.get(`${beaconNodeUrl}/eth/v1/beacon/states/finalized/validators/${blsPublicKey}`);
+
+	return report.data.data.validator.effective_balance;
+};
+
+export const _verifyEffectiveBalance = async (signer: Signer | Provider, report: EffectiveBalanceReportT) => {
+
+	const chainID = await _extractChainID(signer);
+	const constants = _getChainSpecificConstants(chainID);
+
+	try {
+        const response = await axios.post(`${constants.k2Urls.EFFECTIVE_BALANCE_VERIFIER}`, JSON.stringify(report));
+        return response.data;
+    } catch(error: any) {
+		return error;
+    }
+}
+
+export const _generateCorruptionReport = async (middlewareAPI: string, eventData: CorruptionEventDataT, message: string = '', debtorOverride: string | null = null) => {
+
+	const selfAttester = R.rpbs.SelfAttester.createSelfAttester();
+
+	const rpbsPublicKey = R.curveOperations.encodePointInRPBSFormat(selfAttester.publicKey);
+
+	const middlewareInfo = await _getMiddlewareInfo(middlewareAPI);
+
+	const version = middlewareInfo.VERSION;
+	const debtor = debtorOverride ? debtorOverride : middlewareInfo.DEFAULT_SERVICE_PROVIDER_BORROW_ADDRESS;
+
+	const commonInfo: CorruptionEventT = { events: eventData.events };
+
+	const signature = selfAttester.generateSignature(JSON.stringify(commonInfo), message);
+
+	const marshalledSignature = {
+        ...signature,
+        z1Hat: R.curveOperations.encodePointInRPBSFormat(signature.z1Hat),
+        m1Hat: R.curveOperations.encodePointInRPBSFormat(signature.m1Hat)
+    }
+
+	const corruptionReport: CorruptionReportT = {
+		rpbsSelfAttestation: {
+			signature: marshalledSignature,
+			commonInfo: commonInfo,
+			publicKey: _remove0x(rpbsPublicKey)
+		},
+		eventType: "CORRUPTION",
+		version: version,
+		eventData: eventData,
+		serviceProviderAddress: debtor
+	};
+
+	return corruptionReport;
 };

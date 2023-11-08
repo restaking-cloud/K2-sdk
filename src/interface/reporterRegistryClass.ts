@@ -1,7 +1,7 @@
 import { Signer } from 'ethers';
 import { Provider } from '@ethersproject/abstract-provider';
 import {
-    _getKSquaredLendingPoolAdress,
+    _getK2LendingPoolAdress,
     _isReporterActive,
     _isReporterRagequitted,
     _isReportUsed,
@@ -21,8 +21,8 @@ export class ReporterRegistrySubPackage {
         this.etherSigner = signer;
     }
 
-    getKSquaredLendingPoolAdress() {
-        return _getKSquaredLendingPoolAdress(this.etherSigner);
+    getK2LendingPoolAdress() {
+        return _getK2LendingPoolAdress(this.etherSigner);
     }
 
     isReporterActive(reporter: string) {

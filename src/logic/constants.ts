@@ -18,36 +18,45 @@ export enum CHAIN_ID {
 };
 
 export const goerliFactoryAddresses: Record<string, string> = {
-    "K_SQUARED_LENDING": "0xF44c6c567380db68Dc414Bb414Cc9385f7c54FE9",
-	"K_SQUARED_LENDING_DEPOSITOR": "0xd4DADd2C0e40FfC503e0bF56F678D6280B7b461F",
-    "REPORTER_REGISTRY": "0x3F9a0aC0417f9B6aD164174876AB9D42ADEa22d1",
-	"INTEREST_RATE_MODEL": "0x9f75890b1a492047d5e317F63B6780275A8f36B8"
+    "K2_LENDING": "0x10163A57EeCE9EB14Fe9e49889060D0E22c74F1F",
+	"K2_LENDING_DEPOSITOR": "0x3e0D17B69504E4305fbd2D82B9F49240b124f0D3",
+    "REPORTER_REGISTRY": "0x5b98dC0050f082ffda2d5b13f7e47529638197BE",
+	"LINEAR_INTEREST_RATE_MODEL": "0x02E18f54FaaB9ee50F4f2D3da1665fb2Cc7225c9",
+	"PARTITIONED_INTEREST_RATE_MODEL": "0x0c2f45a612e217f206861CFAf6073F154579B0dE",
+	"NODE_OPERATOR_MODULE": "0x6bA61F2CFfEC4cECCc73397E9b04D04b4106658d"
 };
 
 export const holeskyFactoryAddresses: Record<string, string> = {
-    "K_SQUARED_LENDING": "",
-	"K_SQUARED_LENDING_DEPOSITOR": "",
+    "K2_LENDING": "",
+	"K2_LENDING_DEPOSITOR": "",
     "REPORTER_REGISTRY": "",
-	"INTEREST_RATE_MODEL": ""
+	"LINEAR_INTEREST_RATE_MODEL": "",
+	"PARTITIONED_INTEREST_RATE_MODEL": "",
+	"NODE_OPERATOR_MODULE": ""
 };
 
 export const mainnetFactoryAddresses: Record<string, string> = {
-    "K_SQUARED_LENDING": "",
-	"K_SQUARED_LENDING_DEPOSITOR": "",
+    "K2_LENDING": "",
+	"K2_LENDING_DEPOSITOR": "",
     "REPORTER_REGISTRY": "",
-	"INTEREST_RATE_MODEL": ""
+	"LINEAR_INTEREST_RATE_MODEL": "",
+	"PARTITIONED_INTEREST_RATE_MODEL": "",
+	"NODE_OPERATOR_MODULE": ""
 };
 
 export const goerliK2Urls: Record<string, string> = {
-	SUBGRAPH_ENDPOINT: "https://api.studio.thegraph.com/query/50665/k2-goerli/version/latest"
+	SUBGRAPH_ENDPOINT: "https://api.studio.thegraph.com/query/50665/k2-goerli/version/latest",
+	EFFECTIVE_BALANCE_VERIFIER: "https://verify-effective-balance-goerli.restaking.cloud"
 };
 
 export const holeskyK2Urls: Record<string, string> = {
-	SUBGRAPH_ENDPOINT: ""
+	SUBGRAPH_ENDPOINT: "",
+	EFFECTIVE_BALANCE_VERIFIER: ""
 };
 
 export const mainnetK2Urls: Record<string, string> = {
-	SUBGRAPH_ENDPOINT: ""
+	SUBGRAPH_ENDPOINT: "",
+	EFFECTIVE_BALANCE_VERIFIER: ""
 };
 
 export const customErrors: Record<string, string> = {
@@ -57,16 +66,16 @@ export const customErrors: Record<string, string> = {
 
 export const _extractChainID = async (signerOrProvider: Signer | Provider): Promise<number> => {
 
-	if(!signerOrProvider) {
+	if (!signerOrProvider) {
 		throw "Invalid signer or provider instance";
 	}
 
-    if(Signer.isSigner(signerOrProvider)) {
+    if (Signer.isSigner(signerOrProvider)) {
         return signerOrProvider.getChainId();
     }
     
 	const network = await signerOrProvider.getNetwork();
-	if(!network) {
+	if (!network) {
 		throw "Invalid signer or provider instance";
 	}
 
@@ -75,14 +84,14 @@ export const _extractChainID = async (signerOrProvider: Signer | Provider): Prom
 
 export const _getChainSpecificConstants = (chainID: CHAIN_ID.GOERLI | CHAIN_ID.HOLESKY | CHAIN_ID.MAINNET): ChainSpecificConstants => {
 
-	if(chainID === CHAIN_ID.GOERLI) {
+	if (chainID === CHAIN_ID.GOERLI) {
 		return {
 			factoryAddresses: goerliFactoryAddresses,
 			customErrors: customErrors,
 			k2Urls: goerliK2Urls
 		};
 	}
-	else if(chainID === CHAIN_ID.HOLESKY) {
+	else if (chainID === CHAIN_ID.HOLESKY) {
 		return {
 			factoryAddresses: holeskyFactoryAddresses,
 			customErrors: customErrors,

@@ -1,5 +1,5 @@
 # @blockswaplab/k2-sdk
-K2 SDK is a typescript SDk which can be used to interact with the K-Squared Lending protocol.  
+K2 SDK is a typescript SDk which can be used to interact with the K2 Lending protocol.  
 
 ## Installation
 To install the SDK use the command `npm i @blockswaplab/k2-sdk`
@@ -22,9 +22,10 @@ const sdk = new K2(signer);
 The SDK exposed following sub-classes:
 * [utils](./utils-README.md)  
 * [contracts](./contracts-README.md)  
-* [kSquaredLending](./kSquared-README.md)  
-* [kSquaredLendingDepositor](./kSquaredLendingDepositor.md)  
+* [k2Lending](./k2-README.md)  
+* [k2LendingDepositor](./k2LendingDepositor.md)  
 * [reporterRegistry](./reporterRegistry-README.md)  
+* [nodeOperatorModule](./nodeOperatorModule-README.md)
 * constants  
 
 ## utils sub-class
@@ -116,25 +117,25 @@ The function returns info related to the middleware API. Here's an example of th
 ```JSON
 {
     "VERSION":"1",
-    "CHAIN_ID":"5","SERVICE_PROVIDER_BORROW_ADDRESS":"0xEa0F09A471dCe34d7d3675787B1D68D841FF56D2","K_SQUARED_LENDING_CONTRACT":"0x7E015fa28e05eD002Ac166D230cD3c3726CC2e7E","K_SQUARED_REPORTER_REGISTRY":"0x88Cc3B6e96ef8E78b592eaDc135a0DF31991bE20","LIVENESS_ENDPOINT":"https://endpoint.amazonaws.com/goerli/liveness",
+    "CHAIN_ID":"5","SERVICE_PROVIDER_BORROW_ADDRESS":"0xEa0F09A471dCe34d7d3675787B1D68D841FF56D2","K2_LENDING_CONTRACT":"0x7E015fa28e05eD002Ac166D230cD3c3726CC2e7E","K2_REPORTER_REGISTRY":"0x88Cc3B6e96ef8E78b592eaDc135a0DF31991bE20","LIVENESS_ENDPOINT":"https://endpoint.amazonaws.com/goerli/liveness",
     "REPORT_DEADLINE_LENGTH_IN_ETH_BLOCKS":"125"
 }
 ```
 
-### verifyLivenessReport function
-Once the liveness report has been generated, it needs to be verified before submitting it to the reporter registry. To verify the report, `verifyLivenessReport` function should be used.  
+### verifyReport function
+Once the liveness or the corruption report has been generated, it needs to be verified before submitting it to the reporter registry. To verify the report, `verifyReport` function should be used.  
 
 #### Input Parameters
 middlewareAPI: API endpoint of the middleware  
-livenessReport: Liveness report returned by the `generateLivenessReport` function  
+report: Liveness or the corruption report returned by the respective function  
 
 #### Using verifyLivenessReport function
 ```js
-await sdk.utils.verifyLivenessReport(middlewareAPI, livenessReport);
+await sdk.utils.verifyReport(middlewareAPI, report);
 ```
 
 #### Return Parameter
-The function returns a verified report which contains the liveness report along with a signature valid for 20 minutes. Here's how a verified report looks like:
+The function returns a verified report which contains the liveness report or the corruption along with a signature valid for 20 minutes. Here's how a verified liveness report looks like:
 ```JSON
 {
   "inputs": {
@@ -183,24 +184,46 @@ The function returns a verified report which contains the liveness report along 
 }
 ```
 
+### verifyEffectiveBalance function
+This function can be used to verify effective balance of a BLS public key.  
+
+#### Input Parameters
+report: Effective balance report of the BLS public key of the following format:
+```
+{
+  "blsKey": "<BLS_PUBLIC_KEY>",
+  "effectiveBalance": "<EFFECTIVE_BALANCE>"
+}
+```
+
+#### Using verifyEffectiveBalance function
+```js
+await sdk.utils.verifyEffectiveBalance(report);
+```
+
+#### Return Parameter
+The function returns signature after the report has been successfully verified and error otherwise.  
+
 ## contractInstance sub-class
-The SDK also exposes the contractInstance sub-class which provides an instance for contracts used in the K-Squared lending protocol. These instances can be used to call smart contract functions that may or may not exist in the SDK.  
+The SDK also exposes the contractInstance sub-class which provides an instance for contracts used in the K2 lending protocol. These instances can be used to call smart contract functions that may or may not exist in the SDK.  
 
 ### Contract instances exposed by the sub-class
-* kSquaredLendingContract  
-* kSquaredLendingDepositor  
+* k2LendingContract  
+* k2LendingDepositor  
 * ReporterRegistry  
+* nodeOperatorModule  
 
-### Using the contractInstance class
+## Using the contractInstance class
 ```ts
-const kSquaredLendingContractInstance = (await sdk.contractInstance).kSquaredLendingContract();
-const kSquaredLendingDepositorInstance = (await sdk.contractInstance).kSquaredLendingDepositor();
-const reporterRegistryInstance = (await sdk.contractInstance).reporterRegistry();
+const k2LendingContractInstance = await sdk.contracts.k2LendingContract();
+const k2LendingDepositorInstance = await sdk.contracts.k2LendingDepositor();
+const reporterRegistryInstance = await sdk.contracts.reporterRegistry();
+const nodeOperatorModuleInstance = await sdk.contracts.nodeOperatorModule();
 ```
 All the contract instances can be directly accessed without any input parameter.  
 
-## kSquaredLending sub-class
-The following readme describes all the functions and their parameters exposed by the `kSquaredLending` class of the K2 SDK. This class exposes all the important functions from the K-Squared Lending protocol.  
+## k2Lending sub-class
+The following readme describes all the functions and their parameters exposed by the `k2Lending` class of the K2 SDK. This class exposes all the important functions from the K2 Lending protocol.  
 
 ### getDebtor function
 This function allows anyone to get the debtor related information just by the debtor address.  
@@ -210,7 +233,7 @@ debtor: ETH address of the debtor
 
 #### Using getDebtor function
 ```ts
-await sdk.kSquaredLending.getDebtor(debtor);
+await sdk.k2Lending.getDebtor(debtor);
 ```
 
 #### Return Parameter
@@ -221,7 +244,7 @@ Get the kETH address.
 
 #### Using getKethAddress function
 ```ts
-await sdk.kSquaredLending.getKethAddress();
+await sdk.k2Lending.getKethAddress();
 ```
 
 #### Return Parameter
@@ -232,7 +255,7 @@ Get the borrow duration set by the contract.
 
 #### Using getBorrowDuration function
 ```ts
-await sdk.kSquaredLending.getBorrowDuration();
+await sdk.k2Lending.getBorrowDuration();
 ```
 
 #### Return Parameter
@@ -243,7 +266,7 @@ Get the DAO address associated with the contract.
 
 #### Using getDAOAddress function
 ```ts
-await sdk.kSquaredLending.getDAOAddress();
+await sdk.k2Lending.getDAOAddress();
 ```
 
 #### Return Parameter
@@ -254,7 +277,7 @@ Get the proposer registry ETH address.
 
 #### Using getProposerRegistry function
 ```ts
-await sdk.kSquaredLending.getProposerRegistry();
+await sdk.k2Lending.getProposerRegistry();
 ```
 
 #### Return Parameter
@@ -268,7 +291,7 @@ amount: amount of kETH to be deposited
 
 #### Using deposit function
 ```ts
-await sdk.kSquaredLending.deposit(amount);
+await sdk.k2Lending.deposit(amount);
 ```
 
 #### Return Parameter
@@ -283,7 +306,7 @@ recipient: ETH address to deposit kETH for
 
 #### Using depositFor function
 ```ts
-await sdk.kSquaredLending.depositFor(amount, recipient);
+await sdk.k2Lending.depositFor(amount, recipient);
 ```
 
 #### Return Parameter
@@ -298,7 +321,7 @@ claim: `true` for claiming accrued kETH
 
 #### Using withdraw function
 ```ts
-await sdk.kSquaredLending.withdraw(amount, claim);
+await sdk.k2Lending.withdraw(amount, claim);
 ```
 
 #### Return Parameter
@@ -312,14 +335,14 @@ lender: ETH address of the lender
 
 #### Using claimKETHForLender function
 ```ts
-await sdk.kSquaredLending.claimKETHForLender(lender);
+await sdk.k2Lending.claimKETHForLender(lender);
 ```
 
 #### Return Parameter
 Transaction details if the transaction was successful.  
 
 ### nodeOperatorDeposit function
-Deposit node operator in K-Squared lending protocol.  
+Deposit node operator in K2 lending protocol.  
 
 #### Input Parameters
 blsPublicKey: BLS public key of the validator  
@@ -329,35 +352,37 @@ ecdsaSignature: ECDSA signature
 
 #### Using nodeOperatorDeposit function
 ```ts
-await sdk.kSquaredLending.nodeOperatorDeposit(blsPublicKey, payoutRecipient, blsSignature, ecdsaSignature);
+await sdk.k2Lending.nodeOperatorDeposit(blsPublicKey, payoutRecipient, blsSignature, ecdsaSignature);
 ```
 
 #### Return Parameter
 Transaction details if the transaction was successful.  
 
 ### nodeOperatorWithdraw function
-Withdraw node operator from the K-Squared Lending protocol.  
+Withdraw node operator from the K2 Lending protocol.  
 
 #### Input Parameters
+nodeOperatorAddress: ETH address of the node operator  
 blsPublicKey: BLS public key string  
 
 #### Using nodeOperatorWithdraw function
 ```ts
-await sdk.kSquaredLending.nodeOperatorWithdraw(blsPublicKey);
+await sdk.k2Lending.nodeOperatorWithdraw(nodeOperatorAddress, blsPublicKey);
 ```
 
 #### Return Parameter
 Transaction details if the transaction was successful.  
 
 ### nodeOperatorKick function
-Kick node operator from the K-Squared Lending protocol.  
+Kick node operator from the K2 Lending protocol.  
 
 #### Input Parameters
+reporterAddress: ETH address of the reporter  
 blsPublicKey: BLS public key
 
 #### Using nodeOperatorKick function
 ```ts
-await sdk.kSquaredLending.nodeOperatorKick(blsPublicKey);
+await sdk.k2Lending.nodeOperatorKick(reporterAddress, blsPublicKey);
 ```
 
 #### Return Parameter
@@ -371,7 +396,7 @@ blsPublicKeys: List of BLS public keys to claim for
 
 #### Using nodeOperatorClaim function
 ```ts
-await sdk.kSquaredLending.nodeOperatorClaim(blsPublicKeys);
+await sdk.k2Lending.nodeOperatorClaim(blsPublicKeys);
 ```
 
 #### Return Parameter
@@ -388,7 +413,7 @@ recipient: the recipient address
 
 #### Using slash function
 ```ts
-await sdk.kSquaredLending.slash(slashType, debtor, amount, recipient);
+await sdk.k2Lending.slash(slashType, debtor, amount, recipient);
 ```
 
 #### Return Parameter
@@ -397,12 +422,9 @@ Transaction details if the transaction was successful.
 ### terminate function
 Terminate debt position  
 
-#### Input Parameters
-debtor: ETH address of the debtor  
-
 #### Using terminate function
 ```ts
-await sdk.kSquaredLending.terminate(debtor);
+await sdk.k2Lending.terminate();
 ```
 
 #### Return Parameter
@@ -416,7 +438,7 @@ debtor: ETH address of the debtor
 
 #### Using liquidate function
 ```ts
-await sdk.kSquaredLending.liquidate(debtor);
+await sdk.k2Lending.liquidate(debtor);
 ```
 
 #### Return Parameter
@@ -431,7 +453,7 @@ amount: amount of kETH to topup
 
 #### Using topUpSlashAmount function
 ```ts
-await sdk.kSquaredLending.topUpSlashAmount(amount);
+await sdk.k2Lending.topUpSlashAmount(amount);
 ```
 
 #### Return Parameter
@@ -449,36 +471,51 @@ maxSlashableAmountPerCorruption: Maximum slashable amount per corruption
 
 #### Using borrow function
 ```ts
-await sdk.kSquaredLending.borrow(debtPositionType, designatedVerifier, amount, maxSlashableAmountPerLiveness, maxSlashableAmountPerCorruption);
+await sdk.k2Lending.borrow(debtPositionType, designatedVerifier, amount, maxSlashableAmountPerLiveness, maxSlashableAmountPerCorruption);
 ```
 
 #### Return Parameter
 Transaction details if the transaction was successful.  
 
-## kSquaredLendingDepositor sub-class
-The following readme describes all the functions and their parameters exposed by the `kSquaredLendingDepositor` class of the K2 SDK. This sub-class contains all the important functions from the K-Squared Lending depositor contract of the K-Squared Lending protocol.    
+### setHookAsDebtorForSBP function
+External hook contract. Set to address(0) to disable the hook  
+
+#### Input Parameters
+hookAddress: ETH address of the hook contract. Set to address(0) by default  
+
+#### Using setHookAsDebtorForSBP function
+```ts
+await sdk.k2Lending.setHookAsDebtorForSBP(hookAddress);
+```
+
+#### Return Parameter
+Transaction details if the transaction was successful.  
+
+
+## k2LendingDepositor sub-class
+The following readme describes all the functions and their parameters exposed by the `k2LendingDepositor` class of the K2 SDK. This sub-class contains all the important functions from the K2 Lending depositor contract of the K2 Lending protocol.    
 
 ### getKethVaultAddress function
 This function can be used to get the kETH vault address registered with the contract.  
 
 #### Using getKethVaultAddress function
 ```ts
-await sdk.kSquaredLendingDepositor.getKethVaultAddress();
+await sdk.k2LendingDepositor.getKethVaultAddress();
 ```
 
 #### Return parameters
 ETH address of the kETH vault.  
 
-### getKSquaredLendingContractAddress function
-This function can be used to get the K-Squared Lending contract address.  
+### getk2LendingContractAddress function
+This function can be used to get the K2 Lending contract address.  
 
-#### Using getKSquaredLendingContractAddress function
+#### Using getk2LendingContractAddress function
 ```ts
-await sdk.kSquaredLendingDepositor.getKSquaredLendingContractAddress();
+await sdk.k2LendingDepositor.getk2LendingContractAddress();
 ```
 
 #### Return parameters
-ETH address of the K-Squared Lending contract.  
+ETH address of the K2 Lending contract.  
 
 ### deposit function
 This function can be used to deposit tokens to the contract.  
@@ -489,21 +526,21 @@ amount: Amount of tokens to be deposited
 
 #### Using deposit function
 ```ts
-await sdk.kSquaredLendingDepositor.deposit(tokenAddress, amount);
+await sdk.k2LendingDepositor.deposit(tokenAddress, amount);
 ```
 
 #### Return parameters
 Transaction hash if the deposit was successful.  
 
 ## reporterRegistry sub-class
-The following readme describes all the functions and their parameters exposed by the `reporterRegistry` class of the K2 SDK. This sub-class of the SDK exposes all the functions from the reporter registry contract of the K-Squared Lending protocol.  
+The following readme describes all the functions and their parameters exposed by the `reporterRegistry` class of the K2 SDK. This sub-class of the SDK exposes all the functions from the reporter registry contract of the K2 Lending protocol.  
 
-### getKSquaredLendingPoolAdress function
-This function can be used to get the contract address of the K-Squared Lending pool.  
+### getk2LendingPoolAdress function
+This function can be used to get the contract address of the K2 Lending pool.  
 
-#### Using getKSquaredLendingPoolAdress function
+#### Using getk2LendingPoolAdress function
 ```js
-await sdk.reporterRegistry.getKSquaredLendingPoolAdress();
+await sdk.reporterRegistry.getk2LendingPoolAdress();
 ```
 
 #### Return Parameter
@@ -636,7 +673,7 @@ await sdk.reporterRegistry.reportTypedHash(report);
 
 
 #### Input Parameters
-report: Verified report obtained from the `verifyLivenessReport` function, of the following structure:
+report: Verified report obtained from the `verifyReport` function, of the following structure:
 ```
 {
     slashType: SlashType;
@@ -664,3 +701,75 @@ await sdk.reporterRegistry.isValidReport(report, reportSignature);
 #### Return Parameter
 Returns `true` if valid, `false` otherwise.  
 
+## nodeOperatorModule sub-class
+The following readme describes all the functions and their parameters exposed by the `nodeOperatorModule` class of the K2 SDK. This sub-class contains all the important functions from the K2 Node Operator Module contract of the K2 Lending protocol.  
+
+### getk2LendingContract function
+This function can be used to get the k2 Lending contract address set in the K2 Node operator module contract.  
+
+#### Using getk2LendingContract function
+```ts
+await sdk.nodeOperatorModule.getk2LendingContract();
+```
+
+#### Return parameters
+ETH address of the k2Lending contract.  
+
+### getReporterRegistryContract function
+This function can be used to get the reporter registry contract address set in the K2 Node operator module contract.  
+
+#### Using getReporterRegistryContract function
+```ts
+await sdk.nodeOperatorModule.getReporterRegistryContract();
+```
+
+#### Return parameters
+ETH address of the Reporter registry contract. 
+
+### batchNodeOperatorKick function
+Report multiple BLS keys for kicking from K2 pool.  
+
+##### Input Parameters
+blsPublicKeys: List of BLS public keys to kick  
+effectiveBalances: List of effective balance in string for respective BLS public keys  
+designatedVerifierSignatures: List of verifier signatures of the format SignatureECDSAT (defined in the K2-SDK) for the respective BLS public keys  
+
+#### Using batchNodeOperatorKick function
+```ts
+await sdk.nodeOperatorModule.batchNodeOperatorKick(blsPublicKeys, effectiveBalances, designatedVerifierSignatures);
+```
+
+#### Return parameters
+Transaction details if the transaction is successful.  
+
+### nodeOperatorClaim function
+Batch node operator claims must come with an effective balance report.  
+
+##### Input Parameters
+blsPublicKeys: List of BLS public keys to kick  
+effectiveBalances: List of effective balance in string for respective BLS public keys  
+designatedVerifierSignatures: List of verifier signatures of the format SignatureECDSAT (defined in the K2-SDK) for the respective BLS public keys  
+
+#### Using nodeOperatorClaim function
+```ts
+await sdk.nodeOperatorModule.nodeOperatorClaim(blsPublicKeys, effectiveBalances, designatedVerifierSignatures);
+```
+
+#### Return parameters
+Transaction details if the transaction is successful.  
+
+### isValidReport function
+Check whether a kick due to effective balance is valid  
+
+##### Input Parameters
+blsPublicKey: BLS public key to kick  
+effectiveBalance: Effective balance in string for the respective BLS public key  
+designatedVerifierSignature: Verifier signature of the format SignatureECDSAT (defined in the K2-SDK) for the respective BLS public key  
+
+#### Using isValidReport function
+```ts
+await sdk.nodeOperatorModule.isValidReport(blsPublicKey, effectiveBalance, designatedVerifierSignature);
+```
+
+#### Return parameters
+`true` if report is valid, `false` otherwise.  

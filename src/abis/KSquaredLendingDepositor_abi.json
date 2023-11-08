@@ -18,6 +18,49 @@
 	{
 		"inputs": [
 			{
+				"internalType": "enum KSquaredLending.DebtPositionType",
+				"name": "debtPositionType",
+				"type": "uint8"
+			},
+			{
+				"internalType": "address",
+				"name": "designatedVerifier",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "maxSlashableAmountPerLiveness",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "maxSlashableAmountPerCorruption",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "payToken",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "payAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "borrow",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "address",
 				"name": "token",
 				"type": "address"
@@ -29,6 +72,78 @@
 			}
 		],
 		"name": "deposit",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "kethAmount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "payToken",
+				"type": "address"
+			}
+		],
+		"name": "getPayAmountForKETH",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "payAmount",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "enum KSquaredLending.DebtPositionType",
+				"name": "debtPositionType",
+				"type": "uint8"
+			},
+			{
+				"internalType": "address",
+				"name": "designatedVerifier",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "maxSlashableAmountPerLiveness",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "maxSlashableAmountPerCorruption",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bool",
+				"name": "resetDuration",
+				"type": "bool"
+			},
+			{
+				"internalType": "address",
+				"name": "payToken",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "payAmount",
+				"type": "uint256"
+			}
+		],
+		"name": "increaseDebt",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"

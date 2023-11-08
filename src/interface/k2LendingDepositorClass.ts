@@ -2,12 +2,12 @@ import { Signer } from 'ethers';
 import { Provider } from '@ethersproject/abstract-provider';
 import {
     _getKethVaultAddress,
-    _getKSquaredLendingContractAddress,
+    _getK2LendingContractAddress,
     _deposit
-} from '../logic/kSquaredLendingDepositor';
+} from '../logic/k2LendingDepositor';
 import { ReportT, SignatureECDSAT } from '../types';
 
-export class KSquaredLendingDepositorClass {
+export class K2LendingDepositorClass {
 
     etherSigner;
 
@@ -19,8 +19,8 @@ export class KSquaredLendingDepositorClass {
         return _getKethVaultAddress(this.etherSigner);
     }
 
-    getKSquaredLendingContractAddress() {
-        return _getKSquaredLendingContractAddress(this.etherSigner);
+    getK2LendingContractAddress() {
+        return _getK2LendingContractAddress(this.etherSigner);
     }
 
     deposit(tokenAddress: string, amount: number) {

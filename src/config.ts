@@ -4,8 +4,9 @@ import { ConstantsSubPackage } from './interface/constantsClass';
 import { ContractsSubPackage } from './interface/contractsClass';
 import { UtilsSubPackage } from './interface/utilsClass';
 import { ReporterRegistrySubPackage } from './interface/reporterRegistryClass';
-import { KSquaredLendingDepositorClass } from './interface/kSquaredLendingDepositorClass';
-import { KSquaredLendingClass } from './interface/kSquaredLendingClass';
+import { K2LendingDepositorClass } from './interface/k2LendingDepositorClass';
+import { K2LendingClass } from './interface/k2LendingClass';
+import { NodeOperatorModuleSubPackage } from './interface/nodeOperatorModuleClass';
 
 export class K2 {
 
@@ -14,8 +15,9 @@ export class K2 {
     contracts: ContractsSubPackage;
     utils: UtilsSubPackage;
     reporterRegistry: ReporterRegistrySubPackage;
-    kSquaredLendingDepositor: KSquaredLendingDepositorClass;
-    kSquaredLending: KSquaredLendingClass;
+    k2LendingDepositor: K2LendingDepositorClass;
+    k2Lending: K2LendingClass;
+    nodeOperatorModule: NodeOperatorModuleSubPackage;
 
     constructor(signerOrProvider: Signer | Provider) {
         
@@ -24,7 +26,8 @@ export class K2 {
         this.contracts = new ContractsSubPackage(this.etherSigner);
         this.utils = new UtilsSubPackage(this.etherSigner);
         this.reporterRegistry = new ReporterRegistrySubPackage(this.etherSigner);
-        this.kSquaredLendingDepositor = new KSquaredLendingDepositorClass(this.etherSigner);
-        this.kSquaredLending = new KSquaredLendingClass(this.etherSigner);
+        this.k2LendingDepositor = new K2LendingDepositorClass(this.etherSigner);
+        this.k2Lending = new K2LendingClass(this.etherSigner);
+        this.nodeOperatorModule = new NodeOperatorModuleSubPackage(this.etherSigner);
     }
 }

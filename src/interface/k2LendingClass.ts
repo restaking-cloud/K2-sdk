@@ -29,10 +29,11 @@ import {
     _totalSupply, 
     _transfer, 
     _transferFrom, 
-    _withdraw 
-} from '../logic/kSquaredLending';
+    _withdraw,
+    _setHookAsDebtorForSBP
+} from '../logic/k2Lending';
 
-export class KSquaredLendingClass {
+export class K2LendingClass {
 
     etherSigner;
 
@@ -84,12 +85,12 @@ export class KSquaredLendingClass {
         return _nodeOperatorDeposit(this.etherSigner, blsPublicKey, payoutRecipient, blsSignature, ecdsaSignature);
     }
 
-    nodeOperatorWithdraw(blsPublicKey: string) {
-        return _nodeOperatorWithdraw(this.etherSigner, blsPublicKey);
+    nodeOperatorWithdraw(nodeOperatorAddress: string, blsPublicKey: string) {
+        return _nodeOperatorWithdraw(this.etherSigner, nodeOperatorAddress, blsPublicKey);
     }
 
-    nodeOperatorKick(blsPublicKey: string) {
-        return _nodeOperatorKick(this.etherSigner, blsPublicKey);
+    nodeOperatorKick(reporterAddress: string, blsPublicKey: string) {
+        return _nodeOperatorKick(this.etherSigner, reporterAddress, blsPublicKey);
     }
 
     nodeOperatorClaim(blsPublicKeys: string[]) {
@@ -100,8 +101,8 @@ export class KSquaredLendingClass {
         return _slash(this.etherSigner, slashType, debtor, amount, recipient);
     }
 
-    terminate(debtor: string) {
-        return _terminate(this.etherSigner, debtor);
+    terminate() {
+        return _terminate(this.etherSigner);
     }
 
     liquidate(debtor: string) {
@@ -150,5 +151,9 @@ export class KSquaredLendingClass {
 
     transferFrom(from: string, to: string, amount: string) {
         return _transferFrom(this.etherSigner, from, to, amount);
+    }
+
+    setHookAsDebtorForSBP(hookAddress: string) {
+        return _setHookAsDebtorForSBP(this.etherSigner, hookAddress);
     }
 }

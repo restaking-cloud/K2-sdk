@@ -1,6 +1,6 @@
 {
   "name": "@blockswaplab/k2-sdk",
-  "version": "1.0.3",
+  "version": "1.0.10",
   "description": "SDK for K-sqaured lending protocol",
   "main": "./dist/config.js",
   "type": "commonjs",

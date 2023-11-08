@@ -11,6 +11,11 @@ export type SignatureECDSAT = {
     s: string; // y coordinate of the curve
 };
 
+export type EffectiveBalanceReportT = {
+    blsKey: string;
+    effectiveBalance: string;
+};
+
 /// @notice Structure representing the report
 export type ReportT = {
     slashType: SlashType;
@@ -26,11 +31,30 @@ export type LivenessReportT = {
     "eventType": string;
     "version": string;
     "eventData": EventDataT;
+    "serviceProviderAddress": string;
 };
+
+export type CommonInfoLivenessT = {
+    "livenessData": any;
+}
 
 export type RPBSSelfAttestationT = {
     "signature": RPBSSelfAttestationSignatureT;
-    "commonInfo": LivenessT;
+    "commonInfo": CommonInfoLivenessT;
+    "publicKey": string;
+};
+
+export type CorruptionReportT = {
+    "rpbsSelfAttestation": CorruptionRPBSSelfAttestationT;
+    "eventType": string;
+    "version": string;
+    "eventData": CorruptionEventDataT;
+    "serviceProviderAddress": string;
+};
+
+export type CorruptionRPBSSelfAttestationT = {
+    "signature": RPBSSelfAttestationSignatureT;
+    "commonInfo": CorruptionEventT;
     "publicKey": string;
 };
 
@@ -44,27 +68,25 @@ export type RPBSSelfAttestationSignatureT = {
 };
 
 /// @notice Liveness report fetched from the Liveness API
-export type LivenessT = {
-    "numOfValidatorsOnline": string;
-    "numOfValidatorsOffline": string;
-    "totalValidators": string;
-};
+export type LivenessDataT = {
+    "livenessData": any;
+    "severityScore": string;
+}
 
 export type EventDataT = {
-    "numOfValidatorsOnline": string,
-    "numOfValidatorsOffline": string,
-    "totalValidators": string,
+    "query": string;
+    "livenessData": any;
     "proposedSlashing": string;   
 };
 
 export type MiddlewareInfoT = {
-    "VERSION": string,
-    "CHAIN_ID": string,
-    "SERVICE_PROVIDER_BORROW_ADDRESS": string,
-    "K_SQUARED_LENDING_CONTRACT": string,
-    "K_SQUARED_REPORTER_REGISTRY": string,
-    "LIVENESS_ENDPOINT": string,
-    "REPORT_DEADLINE_LENGTH_IN_ETH_BLOCKS": string
+    "VERSION": string;
+    "CHAIN_ID": string;
+    "DEFAULT_SERVICE_PROVIDER_BORROW_ADDRESS": string;
+    "K_SQUARED_LENDING_CONTRACT": string;
+    "K_SQUARED_REPORTER_REGISTRY": string;
+    "LIVENESS_ENDPOINT": string;
+    "REPORT_DEADLINE_LENGTH_IN_ETH_BLOCKS": string;
 };
 
 export type LenderPositionT = {
@@ -86,4 +108,13 @@ export type DebtPositionT = {
     slashAmount: string;
     maxSlashableAmountPerLiveness: string;
     maxSlashableAmountPerCorruption: string;
+}
+
+export type CorruptionEventDataT = {
+    events: any[];
+    proposedSlashing: string;
+}
+
+export type CorruptionEventT = {
+    events: any[]
 }
